@@ -13,7 +13,7 @@
 
 //Sleep vars
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  10*60        /* Time ESP32 will go to sleep (in seconds) */
+#define TIME_TO_SLEEP  10        /* Time ESP32 will go to sleep (in seconds) */
 //RTC_DATA_ATTR int var = 0; //Non-volatile memory
 //
 
@@ -82,21 +82,22 @@ void sensorTriggered();
 
 void setup() {
 
-  delay(500);// CORE BUG QUICK FIX
+  delay(1000);// CORE BUG QUICK FIX
   Serial.begin(9600);
   switch (esp_sleep_get_wakeup_cause())
   {
   case ESP_SLEEP_WAKEUP_TIMER:
   Serial.println("Timer Woke up!");
   queryPM25();
+  Serial.println(PM25_NEW);
   initBME();
   queryBME();
+  Serial.println(temp_new);
+  Serial.println(pres_new);
+  Serial.println(humi_new);
   // TODO upload data
-  // TODO start sensor
-  //interuptInit(); //!!! UNDER DEBUGGING !!!
-  //temp funs
   LEDsStart();
-  loadScreen();
+  //loadScreen();
   delay(5*1000);
   LEDsOff();
   //
@@ -104,22 +105,29 @@ void setup() {
   break;
   case ESP_SLEEP_WAKEUP_EXT0:
   Serial.println("Sensor Woke up!");
+  queryPM25();
+  Serial.println(PM25_NEW);
+  initBME();
+  queryBME();
+  Serial.println(temp_new);
+  Serial.println(pres_new);
+  Serial.println(humi_new);
   LEDsStart();
-  //queryPM25();
-  //initBME();
-  //queryBME();
-  loadScreen();
+  //loadScreen();
   delay(10*1000);
   LEDsOff();
   break;
   case ESP_SLEEP_WAKEUP_UNDEFINED:
   Serial.println("Undefined Woke up!");
   queryPM25();
+  Serial.println(PM25_NEW);
   initBME();
   queryBME();
-  loadScreen();
+  Serial.println(temp_new);
+  Serial.println(pres_new);
+  Serial.println(humi_new);
+  //loadScreen();
   LEDsStart();
-  detachInterrupt(digitalPinToInterrupt(INTERUPT_PIN));
   delay(10*1000);// TODO add timer to switch the system off
   LEDsOff();
   break;
@@ -129,10 +137,10 @@ void setup() {
 
 
   //Sleep
-  // esp_sleep_enable_ext0_wakeup(GPIO_NUM_14, 1); //!!! UNDER DEBUGGING !!!
-  // delay(500);
+  esp_sleep_enable_ext0_wakeup(INTERUPT_PIN, 1); //!!! UNDER DEBUGGING !!!
+  delay(1000);
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-  delay(500);
+  delay(1000);
   esp_deep_sleep_start();
   /*  When the chip wakes up from the  sleep , the pins specified will be configured as RTC IO.
       To be able to use them again as normal digital pins, you have first to call the rtc_gpio_deinit(gpio_num)  method.
